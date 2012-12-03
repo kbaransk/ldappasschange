@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns="http://www.springframework.org/schema/beans"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd" >
+
+    <context:component-scan base-package="pl.kbaranski.ldappasschange.controller" />
+    
+    <bean class="pl.kbaranski.ldappasschange.UserPasswordContainerValidator" />
+    
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="messages" />
+    </bean>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver" >
+        <property name="prefix">
+            <value>/WEB-INF/jsp/</value>
+        </property>
+        <property name="suffix">
+            <value>.jsp</value>
+        </property>
+    </bean>
+
+    <!-- Zewnetrzna konfiguracja: http://blog.carbonfive.com/2008/04/25/configuring-applications-with-spring/ -->
+    <!--  http://www.codedrop.ca/blog/archives/135 -->
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+    </bean>
+ 
+    <bean class="org.springframework.web.context.support.ServletContextPropertyPlaceholderConfigurer">
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
+        <property name="searchContextAttributes" value="true"/>
+        <property name="contextOverride" value="true"/>
+        <property name="ignoreResourceNotFound" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:application.properties</value>
+                <value>classpath:local.properties</value>
+                <value>${config}</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Zaleznosci miedzy beanami: http://www.mkyong.com/spring/spring-propertyplaceholderconfigurer-example/ -->
+
+    <bean id="ldapUtil" class="pl.kbaranski.ldappasschange.utils.LdapUtil">
+        <property name="ldapConfigHandler" ref="ldapConfigHandler" />
+    </bean>
+
+    <bean id="ldapConfigHandler" class="pl.kbaranski.ldappasschange.utils.LdapConfigHandler">
+        <property name="url" value="${ldap.url}" />
+        <property name="userSearchBaseDn" value="${ldap.userSearchBaseDn}" />
+        <property name="defaultUser" value="${ldap.defaultUser}" />
+        <property name="defaultPass" value="${ldap.defaultPass}" />
+    </bean>
+</beans>
